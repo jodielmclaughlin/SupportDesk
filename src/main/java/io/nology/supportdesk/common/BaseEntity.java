@@ -36,4 +36,11 @@ public abstract class BaseEntity {
         this.updatedAt = new Date();
 
     }
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
 }

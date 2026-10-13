@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 public record TicketResponseDTO(Long id, String title, String description, Category category, Priority priority,
-                                Status status, String createdBy, String assignedTo, Date resolvedAt) {
+                                Status status, String createdBy, String assignedTo, Date createdAt, Date updatedAt, Date resolvedAt) {
     public static TicketResponseDTO fromEntity(Ticket ticket){
         return new TicketResponseDTO(
                 ticket.getId(),
@@ -20,6 +20,8 @@ public record TicketResponseDTO(Long id, String title, String description, Categ
                 ticket.getStatus(),
                 ticket.getCreatedBy(),
                 ticket.getAssignedTo(),
+                ticket.getCreatedAt(),
+                ticket.getUpdatedAt(),
                 ticket.getResolvedAt());
     }
 
