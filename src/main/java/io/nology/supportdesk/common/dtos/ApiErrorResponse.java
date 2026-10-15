@@ -1,0 +1,25 @@
+package io.nology.supportdesk.common.dtos;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.http.HttpStatus;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Map;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record ApiErrorResponse(Instant timestamp, int status, String error, String message, String path,
+                               Map<String, ArrayList<String>> details) {
+
+    public static ApiErrorResponse of(HttpStatus httpStatus, String message, String path) {
+        return new ApiErrorResponse(Instant.now(), httpStatus.value(), httpStatus.getReasonPhrase(), message, path,
+                null);
+    }
+
+    public static ApiErrorResponse of(HttpStatus httpStatus, String message, String path,
+                                      Map<String, ArrayList<String>> details) {
+        return new ApiErrorResponse(Instant.now(), httpStatus.value(), httpStatus.getReasonPhrase(), message, path,
+                details);
+    }
+
+}
