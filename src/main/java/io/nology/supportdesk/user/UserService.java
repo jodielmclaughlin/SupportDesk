@@ -1,6 +1,10 @@
 package io.nology.supportdesk.user;
 
+import io.nology.supportdesk.common.exceptions.EmailAlreadyExistsException;
+import io.nology.supportdesk.user.dtos.CreateUserDTO;
 import io.nology.supportdesk.user.entity.User;
+import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -8,13 +12,27 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, ModelMapper modelMapper) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.modelMapper = modelMapper;
     }
 
     public Optional<User> getUserByID(Long id){
         return this.userRepository.findById(id);
 
+    }
+
+    public User createUser(CreateUserDTO data){
+        if(userRepository.existsByEmail(data.getEmail())){
+            throw new EmailAlreadyExistsException( "User with email " + data.getEmail() + " already exists.");
+        }
+        User newUser = modelMapper.map(data, User.class);
+
+        newUser.setPasswordHash(passwordEncoder.encode(data.getPasswordHash()));
+        return userRepository.save(newUser);
     }
 }
