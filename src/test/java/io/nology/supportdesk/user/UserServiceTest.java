@@ -1,24 +1,31 @@
 package io.nology.supportdesk.user;
 
+import io.nology.supportdesk.common.exceptions.EmailAlreadyExistsException;
+import io.nology.supportdesk.user.dtos.CreateUserDTO;
 import io.nology.supportdesk.user.entity.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private ModelMapper modelMapper;
 
     @Spy
     @InjectMocks
@@ -26,50 +33,137 @@ public class UserServiceTest {
 
     @Test
     public void getUserById_callsFindById(){
-        this.userService.getUserByID(1l);
-        verify(this.userRepository).findById(1l);
+        this.userService.getUserByID(1L);
+        verify(this.userRepository).findById(1L);
+    }
+
+    @Test
+    public void getUserById_callsRepositoryWithRequestedId() {
+        Long userId = 42L;
+
+        userService.getUserByID(userId);
+
+        verify(userRepository).findById(userId);
     }
 
     @Test
     public void getUserById_whenUserExists_returnsUser(){
         User fakeUser = new User();
-        fakeUser.setId(1l);
+        fakeUser.setId(1L);
         fakeUser.setName("Fake User");
-        when(this.userRepository.findById(1l)).thenReturn(Optional.of(fakeUser));
-        Optional<User> result = userService.getUserByID(1l);
+        when(this.userRepository.findById(1L)).thenReturn(Optional.of(fakeUser));
+        Optional<User> result = userService.getUserByID(1L);
         assertTrue(result.isPresent());
         assertEquals(fakeUser.getName(), result.get().getName());
     }
 
     @Test
-    public void getUserById_whenUserDoesntExist_ThrowsNotFoundException(){
+    public void getUserById_whenUserDoesntExist_returnsEmptyOptional(){
+        when(userRepository.findById(1L))
+                .thenReturn(Optional.empty());
 
+        Optional<User> result = userService.getUserByID(1L);
+
+        assertTrue(result.isEmpty());
     }
 
     @Test
-    public void getUserByEmail_whenUserExists_returnsMatchingUser(){
+    public void createUser_callsRepositorySave() {
+        CreateUserDTO dto = new CreateUserDTO();
+        User user = new User();
+        when(this.modelMapper.map(dto, User.class)).thenReturn(user);
+        user.setName("Fake User");
 
+        userService.createUser(dto);
+
+        verify(userRepository).save(user);
     }
 
     @Test
-    public void createUser_whenGivenValidDetails_savesAndReturnsNewUser(){
+    public void createUser_savesAndReturnsNewUser(){
+        CreateUserDTO dto = new CreateUserDTO();
+        User user = new User();
+        when(this.modelMapper.map(dto, User.class)).thenReturn(user);
+        user.setName("FakeUser");
+        User savedUser = new User();
+        savedUser.setId(1L);
+        savedUser.setName("FakeUser");
 
+        when(userRepository.save(user)).thenReturn(savedUser);
+
+        User result = userService.createUser(dto);
+
+        assertEquals(savedUser, result);
     }
 
     @Test
-    public void createUser_whenEmailAlreadyExists_RejectsDuplicateEmail(){
+    public void createUser_whenEmailAlreadyExists_throwsException() {
+        CreateUserDTO dto = new CreateUserDTO();
+        dto.setName("Fake User");
+        dto.setEmail("fake@example.com");
 
+        when(userRepository.existsByEmail("fake@example.com"))
+                .thenReturn(true);
+
+        assertThrows(
+                EmailAlreadyExistsException.class,
+                () -> userService.createUser(dto)
+        );
+
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
-    public void updateUser_whenUserExists_UpdatesPermittedFields(){
+    public void createUser_whenEmailDoesNotExist_savesUser() {
+        CreateUserDTO dto = new CreateUserDTO();
+        dto.setEmail("new@example.com");
+        User user = new User();
+        when(this.modelMapper.map(dto, User.class)).thenReturn(user);
 
+
+        when(userRepository.existsByEmail("new@example.com"))
+                .thenReturn(false);
+
+        userService.createUser(dto);
+
+        verify(userRepository).save(user);
     }
-
     @Test
-    public void updateUser_whenUserDoesntExist_ThrowsNotFoundException(){
+    void createUser_encodesPasswordBeforeSaving() {
+        CreateUserDTO dto = new CreateUserDTO();
+        dto.setEmail("fake@example.com");
+        dto.setPasswordHash("plainPassword123");
+        User user = new User();
+        when(this.modelMapper.map(dto, User.class)).thenReturn(user);
 
+        when(userRepository.existsByEmail("fake@example.com"))
+                .thenReturn(false);
+        when(passwordEncoder.encode("plainPassword123"))
+                .thenReturn("encodedPassword123");
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.createUser(dto);
+
+        assertEquals("encodedPassword123", result.getPasswordHash());
+        verify(passwordEncoder).encode("plainPassword123");
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+
+        verify(userRepository).save(userCaptor.capture());
+
+        assertEquals("encodedPassword123", userCaptor.getValue().getPasswordHash());
     }
+
+//
+//    @Test
+//    public void updateUser_whenUserExists_UpdatesPermittedFields(){
+//
+//    }
+//
+//    @Test
+//    public void updateUser_whenUserDoesntExist_ThrowsNotFoundException(){
+//
+//    }
 }
 
 //Test	Expected behaviour
