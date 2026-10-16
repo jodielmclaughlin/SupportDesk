@@ -36,6 +36,12 @@ public class UserServiceTest {
     private UserService userService;
 
     @Test
+    public void getAllUsers_callsFindAllOnRepo(){
+        this.userService.getAllUsers();
+        verify(this.userRepository).findAll();
+    }
+
+    @Test
     public void getUserById_callsFindById(){
         this.userService.getUserByID(1L);
         verify(this.userRepository).findById(1L);

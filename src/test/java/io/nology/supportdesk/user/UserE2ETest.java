@@ -6,7 +6,6 @@ import io.nology.supportdesk.user.dtos.UpdateUserDTO;
 import io.nology.supportdesk.user.entity.User;
 import io.nology.supportdesk.user.entity.UserRole;
 import io.restassured.http.ContentType;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +18,39 @@ public class UserE2ETest extends BaseE2ETest {
 
     @Autowired
     private UserService userService;
+
+    @Test
+    public void getAllUsers_returnsOKAndListOfUsers(){
+        CreateUserDTO request = new CreateUserDTO();
+        request.setName("Fake");
+        request.setEmail("fakeuser@example.com");
+        request.setPasswordHash("plainPassword123");
+        request.setRole(UserRole.REQUESTER);
+        User fake = userService.createUser(request);
+
+        CreateUserDTO request2 = new CreateUserDTO();
+        request.setName("Fake");
+        request.setEmail("fakeuser2@example.com");
+        request.setPasswordHash("plainPassword123");
+        request.setRole(UserRole.REQUESTER);
+        User fake2 = userService.createUser(request);
+
+        given()
+               .when()
+               .get("/users")
+               .then()
+               .statusCode(HttpStatus.OK.value())
+               .body("$", hasSize(2))
+               .body(matchesJsonSchemaInClasspath("schema/user-list-schema.json"));
+    }
+
+    @Test
+    public void getAllUsers_whenNoUsers_returnsEmptyArray(){
+        given()
+                .when().get("/users")
+                .then().statusCode(HttpStatus.OK.value())
+                .body("$", hasSize(0));
+    }
 
     @Test
     public void getById_validId_returnsUserAndDoesntExposePasswordHash(){
