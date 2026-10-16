@@ -2,7 +2,9 @@ package io.nology.supportdesk.user;
 
 import io.nology.supportdesk.common.exceptions.EmailAlreadyExistsException;
 import io.nology.supportdesk.user.dtos.CreateUserDTO;
+import io.nology.supportdesk.user.dtos.UpdateUserDTO;
 import io.nology.supportdesk.user.entity.User;
+import io.nology.supportdesk.user.entity.UserRole;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -12,6 +14,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Optional;
 
@@ -26,6 +29,7 @@ public class UserServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private ModelMapper modelMapper;
+
 
     @Spy
     @InjectMocks
@@ -154,23 +158,59 @@ public class UserServiceTest {
         assertEquals("encodedPassword123", userCaptor.getValue().getPasswordHash());
     }
 
-//
-//    @Test
-//    public void updateUser_whenUserExists_UpdatesPermittedFields(){
-//
-//    }
-//
-//    @Test
-//    public void updateUser_whenUserDoesntExist_ThrowsNotFoundException(){
-//
-//    }
+
+    @Test
+    public void updateUser_whenUserExists_updatesPermittedFields(){
+        UpdateUserDTO dto = new UpdateUserDTO();
+        User fakeUser = new User();
+        when(this.userRepository.findById(1L)).thenReturn(Optional.of(fakeUser));
+        Optional<User> result = this.userService.updateUser(1L, dto);
+        verify(this.modelMapper).map(dto, fakeUser);
+        verify(this.userRepository).save(fakeUser);
+        assertEquals(fakeUser, result.get());
+    }
+
+    @Test
+    public void updateUser_whenUserDoesntExist_returnsEmptyOptionalDoNotSave(){
+        when(this.userRepository.findById(1L)).thenReturn(Optional.empty());
+        Optional<User> result = this.userService.updateUser(1L, new UpdateUserDTO());
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(this.modelMapper);
+        verify(this.userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void updateUser_changesRoleButPreservesPasswordHash() {
+        User existingUser = new User();
+        existingUser.setName("Fake User");
+        existingUser.setPasswordHash("existingEncodedHash");
+        existingUser.setRole(UserRole.REQUESTER);
+
+        UpdateUserDTO dto = new UpdateUserDTO();
+        dto.setName("Updated User");
+        dto.setRole(UserRole.AGENT);
+
+        when(userRepository.findById(1L))
+                .thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        ModelMapper realMapper = new ModelMapper();
+
+        UserService service = new UserService(
+                userRepository,
+                passwordEncoder,
+                realMapper
+        );
+
+        Optional<User> result = service.updateUser(1L, dto);
+        assertTrue(result.isPresent());
+        assertEquals("Updated User", result.get().getName());
+        assertEquals(UserRole.AGENT, result.get().getRole());
+        assertEquals("existingEncodedHash", result.get().getPasswordHash());
+
+        verify(userRepository).save(existingUser);
+
+    }
+
 }
 
-//Test	Expected behaviour
-//getUserById — user exists	Returns the requested user
-//getUserById — user doesn't exist	Throws your not-found exception
-//getUserByEmail — email exists	Returns the matching user
-//createUser — valid details	Saves and returns the new user
-//createUser — email already exists	Rejects the duplicate email
-//updateUser — user exists	Updates the permitted fields
-//updateUser — user doesn't exist	Throws your not-found exception

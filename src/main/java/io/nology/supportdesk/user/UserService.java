@@ -2,6 +2,7 @@ package io.nology.supportdesk.user;
 
 import io.nology.supportdesk.common.exceptions.EmailAlreadyExistsException;
 import io.nology.supportdesk.user.dtos.CreateUserDTO;
+import io.nology.supportdesk.user.dtos.UpdateUserDTO;
 import io.nology.supportdesk.user.entity.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,5 +35,16 @@ public class UserService {
 
         newUser.setPasswordHash(passwordEncoder.encode(data.getPasswordHash()));
         return userRepository.save(newUser);
+    }
+
+    public Optional<User> updateUser(Long id, UpdateUserDTO dto){
+        Optional<User> result = this.userRepository.findById(id);
+        if(result.isEmpty()) {
+            return result;
+        }
+        User toUpdate = result.get();
+        modelMapper.map(dto, toUpdate);
+        this.userRepository.save(toUpdate);
+        return Optional.of(toUpdate);
     }
 }

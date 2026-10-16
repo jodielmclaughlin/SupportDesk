@@ -2,6 +2,7 @@ package io.nology.supportdesk.user;
 
 import io.nology.supportdesk.common.BaseE2ETest;
 import io.nology.supportdesk.user.dtos.CreateUserDTO;
+import io.nology.supportdesk.user.dtos.UpdateUserDTO;
 import io.nology.supportdesk.user.entity.User;
 import io.nology.supportdesk.user.entity.UserRole;
 import io.restassured.http.ContentType;
@@ -17,8 +18,6 @@ public class UserE2ETest extends BaseE2ETest {
 
     @Autowired
     private UserService userService;
-    @Autowired
-    private UserRepository userRepository;
 
     @Test
     public void getById_validId_returnsUserAndDoesntExposePasswordHash(){
@@ -47,7 +46,7 @@ public class UserE2ETest extends BaseE2ETest {
 
         given()
                 .when()
-                .get("/users/" + 1l)
+                .get("/users/" + 1L)
                 .then().statusCode(HttpStatus.NOT_FOUND.value())
                 .body("status", equalTo(404))
                 .body("error", equalTo("Not Found"))
@@ -84,14 +83,15 @@ public class UserE2ETest extends BaseE2ETest {
                 .body("name", equalTo("Fake"))
                 .body("email", equalTo("fakeuser@example.com"))
                 .body("role", equalTo("REQUESTER"))
-                .body("$", not(hasKey("passwordHash")));
+                .body("$", not(hasKey("passwordHash")))
+                .body(matchesJsonSchemaInClasspath("schema/user-schema.json"));
     }
 
     @Test
     public void createUser_withInvalidEmail_returns400(){
         CreateUserDTO request = new CreateUserDTO();
         request.setName("Fake");
-        request.setEmail("fakeuseremail");
+        request.setEmail("fakeuser.email");
         request.setPasswordHash("plainPassword123");
         request.setRole(UserRole.REQUESTER);
 
@@ -146,6 +146,83 @@ public class UserE2ETest extends BaseE2ETest {
                 .body("message", containsString("User with email " + request.getEmail() + " already exists."))
                 .body(matchesJsonSchemaInClasspath("schema/api-error-response-schema.json"));
     }
+
+    @Test
+    public void updateUser_whenUpdatingExistingUser_returnsOKWithUpdatedDetails(){
+        CreateUserDTO request = new CreateUserDTO();
+        request.setName("Fake");
+        request.setEmail("fakeuser@example.com");
+        request.setPasswordHash("plainPassword123");
+        request.setRole(UserRole.REQUESTER);
+        User fake = this.userService.createUser(request);
+
+        UpdateUserDTO updatedUser = new UpdateUserDTO();
+        updatedUser.setName("Updated");
+        updatedUser.setRole(UserRole.ADMIN);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(updatedUser)
+                .when()
+                .log()
+                .all()
+                .patch("/users/" + fake.getId())
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .body("name", equalTo("Updated"))
+                .body("role", equalTo("ADMIN"))
+                .body(matchesJsonSchemaInClasspath("schema/user-schema.json"));
+    }
+
+    @Test
+    public void updateUser_whenNoExistingUser_returns404(){
+        UpdateUserDTO updatedUser = new UpdateUserDTO();
+        updatedUser.setName("Updated");
+        updatedUser.setRole(UserRole.ADMIN);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(updatedUser)
+                .when()
+                .patch("/users/2")
+                .then().log().all()
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .body("status", equalTo(404))
+                .body("error", equalTo("Not Found"))
+                .body("message", equalTo("User not found with ID: 2"))
+                .body(matchesJsonSchemaInClasspath("schema/api-error-response-schema.json"));
+    }
+
+    @Test
+    public void updateUser_whenReturningUpdatedUser_doesNotExposePasswordHash(){
+        CreateUserDTO request = new CreateUserDTO();
+        request.setName("Fake");
+        request.setEmail("fakeuser@example.com");
+        request.setPasswordHash("plainPassword123");
+        request.setRole(UserRole.REQUESTER);
+        User fake = this.userService.createUser(request);
+
+        UpdateUserDTO updatedUser = new UpdateUserDTO();
+        updatedUser.setName("Updated");
+        updatedUser.setRole(UserRole.ADMIN);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(updatedUser)
+                .when()
+                .log()
+                .all()
+                .patch("/users/" + fake.getId())
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .body("name", equalTo("Updated"))
+                .body("role", equalTo("ADMIN"))
+                .body("$", not(hasKey("passwordHash")))
+                .body(matchesJsonSchemaInClasspath("schema/user-schema.json"));
+
+    }
+
+
 
 }
 
