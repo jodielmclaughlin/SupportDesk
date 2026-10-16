@@ -8,6 +8,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,6 +21,10 @@ public class UserService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
+    }
+
+    public List<User> getAllUsers(){
+        return this.userRepository.findAll();
     }
 
     public Optional<User> getUserByID(Long id){
@@ -46,5 +51,14 @@ public class UserService {
         modelMapper.map(dto, toUpdate);
         this.userRepository.save(toUpdate);
         return Optional.of(toUpdate);
+    }
+
+    public boolean deleteUser(Long id){
+        Optional<User> result = this.userRepository.findById(id);
+        if(result.isEmpty()) {
+            return false;
+        }
+        this.userRepository.delete(result.get());
+        return true;
     }
 }

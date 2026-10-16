@@ -212,5 +212,22 @@ public class UserServiceTest {
 
     }
 
+    @Test
+    public void deleteUser_whenUserExists_returnsTrueAndCallsDelete(){
+        User fakeUser = new User();
+        when(this.userRepository.findById(1L)).thenReturn(Optional.of(fakeUser));
+        boolean result = this.userService.deleteUser(1L);
+        assertTrue(result);
+        verify(this.userRepository).delete(fakeUser);
+    }
+
+    @Test
+    public void deleteUser_userDoesNotExist_returnsFalseAndDoesNotCallDelete(){
+        when(this.userRepository.findById(1L)).thenReturn(Optional.empty());
+        boolean result = this.userService.deleteUser(1L);
+        assertFalse(result);
+        verify(this.userRepository, never()).delete(any(User.class));
+    }
+
 }
 

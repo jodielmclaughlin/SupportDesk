@@ -41,6 +41,14 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserDTO data){
         User updated = this.userService.updateUser(id, data).orElseThrow(() -> new NotFoundException("User not found with ID: " + id));
         return ResponseEntity.ok(UserResponseDTO.fromEntity(updated));
+    }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id){
+        boolean successfullyDelete = this.userService.deleteUser(id);
+        if(!successfullyDelete){
+            throw new NotFoundException("User not found with ID: " + id);
+        }
+        return ResponseEntity.noContent().build();
     }
 }

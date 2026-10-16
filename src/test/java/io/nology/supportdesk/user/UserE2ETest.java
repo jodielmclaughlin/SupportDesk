@@ -6,6 +6,7 @@ import io.nology.supportdesk.user.dtos.UpdateUserDTO;
 import io.nology.supportdesk.user.entity.User;
 import io.nology.supportdesk.user.entity.UserRole;
 import io.restassured.http.ContentType;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -222,7 +223,45 @@ public class UserE2ETest extends BaseE2ETest {
 
     }
 
+    @Test
+    public void deleteUser_userDoesNotExist_returnsNotFound(){
+        given()
+                .when()
+                .delete("/users/1")
+                .then()
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .body("message", equalTo("User not found with ID: 1"))
+                .body(matchesJsonSchemaInClasspath("schema/api-error-response-schema.json"));
 
+    }
+
+    @Test
+    public void deleteUser_userExists_returnsNoContent(){
+        CreateUserDTO dto = new CreateUserDTO();
+        dto.setName("Fake");
+        dto.setEmail("fakeuser@example.com");
+        dto.setPasswordHash("plainPassword123");
+        dto.setRole(UserRole.REQUESTER);
+        User user = this.userService.createUser(dto);
+
+
+        given()
+                .when()
+                .delete("/users/" + user.getId())
+                .then()
+                .statusCode(HttpStatus.NO_CONTENT.value());
+    }
+
+    @Test
+    public void deleteUser_invalidDataTypeId_returnsBadRequest(){
+        given().when().delete("/users/" + "banana")
+                // assert
+                .then().log().all().statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", containsString("Failed to convert value"))
+                .body(matchesJsonSchemaInClasspath("schema/api-error-response-schema.json"));
+    }
 
 }
 
