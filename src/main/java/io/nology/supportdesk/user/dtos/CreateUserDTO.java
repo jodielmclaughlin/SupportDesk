@@ -19,13 +19,6 @@ public class CreateUserDTO {
     @NotNull(message = "Role is required")
     private UserRole role;
 
-    public CreateUserDTO(String name, String email, UserRole role, String passwordHash) {
-        this.name = name;
-        this.email = email;
-        this.role = role;
-        this.passwordHash = passwordHash;
-    }
-
     public CreateUserDTO() {
 
     }

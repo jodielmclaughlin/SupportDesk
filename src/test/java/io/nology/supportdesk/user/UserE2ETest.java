@@ -2,6 +2,7 @@ package io.nology.supportdesk.user;
 
 import io.nology.supportdesk.common.BaseE2ETest;
 import io.nology.supportdesk.user.dtos.CreateUserDTO;
+import io.nology.supportdesk.user.entity.User;
 import io.nology.supportdesk.user.entity.UserRole;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,52 @@ public class UserE2ETest extends BaseE2ETest {
     private UserService userService;
     @Autowired
     private UserRepository userRepository;
+
+    @Test
+    public void getById_validId_returnsUserAndDoesntExposePasswordHash(){
+        CreateUserDTO request = new CreateUserDTO();
+        request.setName("Fake");
+        request.setEmail("fakeuser@example.com");
+        request.setPasswordHash("plainPassword123");
+        request.setRole(UserRole.REQUESTER);
+        User fake = userService.createUser(request);
+        Long id = fake.getId();
+
+        given()
+                .when()
+                .get("/users/" + id)
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .body("name", equalTo("Fake"))
+                .body("email", equalTo("fakeuser@example.com"))
+                .body("role", equalTo("REQUESTER"))
+                .body("$", not(hasKey("passwordHash")));
+
+    }
+
+    @Test
+    public void getById_nonExistentId_returns404(){
+
+        given()
+                .when()
+                .get("/users/" + 1l)
+                .then().statusCode(HttpStatus.NOT_FOUND.value())
+                .body("status", equalTo(404))
+                .body("error", equalTo("Not Found"))
+                .body("message", equalTo("User not found with ID: 1"))
+                .body(matchesJsonSchemaInClasspath("schema/api-error-response-schema.json"));
+    }
+
+    @Test
+    public void getById_invalidDataTypeId_returnsBadRequest(){
+        given().when().get("/users/" + "banana")
+                // assert
+                .then().log().all().statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", containsString("Failed to convert value"))
+                .body(matchesJsonSchemaInClasspath("schema/api-error-response-schema.json"));
+    }
 
     @Test
     public void createUser_withValidData_returnsCreatedUserWithoutPassword() {
@@ -54,7 +101,7 @@ public class UserE2ETest extends BaseE2ETest {
                 .when()
                 .post("/users")
                 .then()
-                .statusCode(400);
+                .statusCode(HttpStatus.BAD_REQUEST.value());
     }
     @Test
     public void createUser_withMissingField_returns400(){
@@ -70,7 +117,7 @@ public class UserE2ETest extends BaseE2ETest {
                 .when()
                 .post("/users")
                 .then()
-                .statusCode(400);
+                .statusCode(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
