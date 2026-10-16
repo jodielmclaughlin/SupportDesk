@@ -3,6 +3,7 @@ package io.nology.supportdesk.common;
 import io.nology.supportdesk.common.dtos.ApiErrorResponse;
 import io.nology.supportdesk.common.exceptions.EmailAlreadyExistsException;
 import io.nology.supportdesk.common.exceptions.NotFoundException;
+import io.nology.supportdesk.common.exceptions.UnprocessableContentException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,5 +30,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, HttpServletRequest req) {
         ApiErrorResponse response = ApiErrorResponse.of(HttpStatus.BAD_REQUEST, ex.getMessage(), req.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(UnprocessableContentException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnprocessableContent(UnprocessableContentException ex, HttpServletRequest req){
+        ApiErrorResponse response = ApiErrorResponse.of(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage(), req.getRequestURI());
+        return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_CONTENT);
     }
 }

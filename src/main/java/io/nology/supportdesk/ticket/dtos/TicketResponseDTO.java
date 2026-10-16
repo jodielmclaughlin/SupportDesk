@@ -18,8 +18,8 @@ public record TicketResponseDTO(Long id, String title, String description, Categ
                 ticket.getCategory(),
                 ticket.getPriority(),
                 ticket.getStatus(),
-                ticket.getCreatedBy(),
-                ticket.getAssignedTo(),
+                ticket.getCreatedBy().getName(),
+                ticket.getAssignedTo().getName(),
                 ticket.getCreatedAt(),
                 ticket.getUpdatedAt(),
                 ticket.getResolvedAt());

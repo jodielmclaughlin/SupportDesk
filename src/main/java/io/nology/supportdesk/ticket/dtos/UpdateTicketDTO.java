@@ -3,6 +3,7 @@ package io.nology.supportdesk.ticket.dtos;
 import io.nology.supportdesk.ticket.entity.Category;
 import io.nology.supportdesk.ticket.entity.Priority;
 import io.nology.supportdesk.ticket.entity.Status;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 
 import java.util.Date;
@@ -23,11 +24,11 @@ public class UpdateTicketDTO {
 
     private Status status;
 
-    @Pattern(regexp = ".*\\S.*", message = "Created by field must not be empty")
-    private String createdBy;
+    @Min(value = 1)
+    private Long createdBy;
 
-    @Pattern(regexp = ".*\\S.*", message = "Assigned to field must not be empty")
-    private String assignedTo;
+    @Min(value = 1)
+    private Long assignedTo;
 
 
     private Date resolvedAt;
@@ -72,19 +73,19 @@ public class UpdateTicketDTO {
         this.status = status;
     }
 
-    public String getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 
-    public String getAssignedTo() {
+    public Long getAssignedTo() {
         return assignedTo;
     }
 
-    public void setAssignedTo(String assignedTo) {
+    public void setAssignedTo(Long assignedTo) {
         this.assignedTo = assignedTo;
     }
 

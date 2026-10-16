@@ -3,7 +3,9 @@ package io.nology.supportdesk.ticket.dtos;
 import io.nology.supportdesk.ticket.entity.Category;
 import io.nology.supportdesk.ticket.entity.Priority;
 import io.nology.supportdesk.ticket.entity.Status;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Date;
 
@@ -24,11 +26,13 @@ public class CreateTicketDTO {
 
     private Status status;
 
-    @NotBlank(message = "First name must not be empty")
-    private String createdBy;
+    @NotNull
+    @Min(1)
+    private Long createdBy;
 
-    @NotBlank(message = "First name must not be empty")
-    private String assignedTo;
+    @NotNull
+    @Min(1)
+    private Long assignedTo;
 
 
     private Date resolvedAt;
@@ -73,19 +77,19 @@ public class CreateTicketDTO {
         this.status = status;
     }
 
-    public String getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 
-    public String getAssignedTo() {
+    public Long getAssignedTo() {
         return assignedTo;
     }
 
-    public void setAssignedTo(String assignedTo) {
+    public void setAssignedTo(Long assignedTo) {
         this.assignedTo = assignedTo;
     }
 

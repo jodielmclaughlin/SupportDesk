@@ -1,6 +1,7 @@
 package io.nology.supportdesk.ticket.entity;
 
 import io.nology.supportdesk.common.BaseEntity;
+import io.nology.supportdesk.user.entity.User;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -27,11 +28,13 @@ public class Ticket extends BaseEntity {
     @Column
     private Status status;
 
-    @Column (nullable = false)
-    private String createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn (name = "user_id", nullable = false)
+    private User createdBy;
 
-    @Column (nullable = false)
-    private String assignedTo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn (name = "user_id", nullable = false)
+    private User assignedTo;
 
     @Column
     private Date resolvedAt;
@@ -76,19 +79,19 @@ public class Ticket extends BaseEntity {
         this.status = status;
     }
 
-    public String getCreatedBy() {
+    public User getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
     }
 
-    public String getAssignedTo() {
+    public User getAssignedTo() {
         return assignedTo;
     }
 
-    public void setAssignedTo(String assignedTo) {
+    public void setAssignedTo(User assignedTo) {
         this.assignedTo = assignedTo;
     }
 
