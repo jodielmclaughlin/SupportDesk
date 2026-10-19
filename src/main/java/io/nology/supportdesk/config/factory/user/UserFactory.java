@@ -44,10 +44,10 @@ public class UserFactory {
         return create(empty);
     }
 
-    public List<User> create(int n){
+    public List<User> create(UserFactoryOptions options, int n){
         ArrayList<User> users = new ArrayList<>();
         for(int i = 0; i < n; i++){
-            User created = create();
+            User created = create(options);
             users.add(created);
         }
         return users;
@@ -67,6 +67,8 @@ public class UserFactory {
         T[] values = enumClass.getEnumConstants();
         return values[ThreadLocalRandom.current().nextInt(values.length)];
     }
-
+    public List<User> getAll(){
+        return this.repo.findAll();
+    }
 
 }

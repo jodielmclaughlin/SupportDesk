@@ -18,7 +18,6 @@ import java.util.concurrent.ThreadLocalRandom;
 @Component
 @Profile({"dev","test"})
 public class TicketFactory {
-    private final Faker faker = new Faker();
     private final TicketRepository repo;
     private final UserFactory userFactory;
 
@@ -61,7 +60,7 @@ public class TicketFactory {
         createdTicket.setCreatedBy(options.createdBy);
         createdTicket.setAssignedTo(options.assignedTo);
         createdTicket.setTitle(options.title !=null ? options.title : titles[ThreadLocalRandom.current().nextInt(titles.length)]);
-        createdTicket.setDescription(options.description !=null ? options.description : faker.lorem().paragraph());
+        createdTicket.setDescription(options.description !=null ? options.description : titles[ThreadLocalRandom.current().nextInt(titles.length)]);
         createdTicket.setCategory(options.category != null ? options.category : randomEnum(Category.class));
         createdTicket.setPriority(options.priority != null ? options.priority : randomEnum(Priority.class));
         createdTicket.setStatus(options.status != null ? options.status : Status.OPEN);
