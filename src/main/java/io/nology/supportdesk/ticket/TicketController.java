@@ -5,6 +5,8 @@ import io.nology.supportdesk.ticket.dtos.CreateTicketDTO;
 import io.nology.supportdesk.ticket.dtos.TicketResponseDTO;
 import io.nology.supportdesk.ticket.dtos.UpdateTicketDTO;
 import io.nology.supportdesk.ticket.entity.Ticket;
+import io.nology.supportdesk.user.entity.User;
+import io.nology.supportdesk.user.entity.UserRole;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,10 +34,10 @@ public class TicketController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Ticket> getByID(@PathVariable Long id){
+    public ResponseEntity<TicketResponseDTO> getByID(@PathVariable Long id){
         log.info("Getting ticket with ID: " + id);
         Ticket foundTicket = this.ticketService.getTicketById(id).orElseThrow(() -> new NotFoundException("Ticket not found with ID: " + id));
-        return ResponseEntity.ok(foundTicket);
+        return ResponseEntity.ok(TicketResponseDTO.fromEntity(foundTicket));
     }
 
     @PostMapping

@@ -28,15 +28,15 @@ public class Ticket extends BaseEntity {
     @Column
     private Status status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn (name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn (name = "created_by_id", nullable = false)
     private User createdBy;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn (name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn (name = "assigned_to_id")
     private User assignedTo;
 
-    @Column
+    @Column(nullable = true)
     private Date resolvedAt;
 
     public String getTitle() {

@@ -10,8 +10,11 @@
     "priority": { "type": "string" },
     "createdBy" : {"type":"string" },
     "assignedTo": { "type": "string" },
-    "resolvedAt": { "type": "string" }
+    "createdAt" : { "type": "string"},
+    "updatedAt" : { "type": "string"},
+    "resolvedAt": { "type": ["string", "null"] }
   },
-  "required": ["id", "title", "description", "status", "category", "priority", "createdBy", "assignedTo", "resolvedAt"],
+  "required": ["id", "title", "description", "status", "category", "priority", "createdBy", "assignedTo", "createdAt",
+    "updatedAt"],
   "additionalProperties": false
 }

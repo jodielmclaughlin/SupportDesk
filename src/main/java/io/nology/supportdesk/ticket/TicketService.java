@@ -4,7 +4,6 @@ import io.nology.supportdesk.common.exceptions.UnprocessableContentException;
 import io.nology.supportdesk.ticket.dtos.CreateTicketDTO;
 import io.nology.supportdesk.ticket.dtos.UpdateTicketDTO;
 import io.nology.supportdesk.ticket.entity.Ticket;
-import io.nology.supportdesk.user.UserRepository;
 import io.nology.supportdesk.user.UserService;
 import io.nology.supportdesk.user.entity.User;
 import org.modelmapper.ModelMapper;
@@ -64,11 +63,13 @@ public class TicketService {
     }
 
     public Optional<Ticket> updateTicket(Long id, UpdateTicketDTO data){
+
         Optional<Ticket> result = this.ticketRepository.findById(id);
 
         if (result.isEmpty()){
             return result;
         }
+
         Ticket toUpdate = result.get();
 
         if(data.getCreatedBy() != null){

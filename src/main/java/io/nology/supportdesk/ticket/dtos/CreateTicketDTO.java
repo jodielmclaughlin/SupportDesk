@@ -17,12 +17,9 @@ public class CreateTicketDTO {
     @NotBlank(message = "Description must not be empty")
     private String description;
 
-
     private Category category;
 
-
     private Priority priority;
-
 
     private Status status;
 
@@ -33,7 +30,6 @@ public class CreateTicketDTO {
     @NotNull
     @Min(1)
     private Long assignedTo;
-
 
     private Date resolvedAt;
 

@@ -2,9 +2,11 @@ package io.nology.supportdesk.ticket;
 
 import io.nology.supportdesk.common.exceptions.UnprocessableContentException;
 import io.nology.supportdesk.ticket.dtos.CreateTicketDTO;
+import io.nology.supportdesk.ticket.dtos.UpdateTicketDTO;
 import io.nology.supportdesk.ticket.entity.Ticket;
 import io.nology.supportdesk.user.UserService;
 import io.nology.supportdesk.user.entity.User;
+import io.nology.supportdesk.user.entity.UserRole;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Optional;
 
@@ -95,6 +98,136 @@ public class TicketServiceTest {
         verify(this.ticketRepository).save(fakeTicket);
         assertEquals(fakeTicket, result);
     }
+
+    @Test
+    public void updateTicket_whenTicketIdExists_returnsUpdatedTicket(){
+        UpdateTicketDTO dto = new UpdateTicketDTO();
+        Ticket fakeTicket = new Ticket();
+        when(this.ticketRepository.findById(1L)).thenReturn(Optional.of(fakeTicket));
+        Optional<Ticket> result = this.ticketService.updateTicket(1L, dto);
+        verify(this.modelMapper).map(dto, fakeTicket);
+        verify(this.ticketRepository).save(fakeTicket);
+        assertTrue(result.isPresent());
+        assertEquals(fakeTicket, result.get());
+    }
+
+    @Test
+    public void updateTicket_whenTicketIdDoesNotExists_returnsEmptyOptionalDoNotSave(){
+        when(this.ticketRepository.findById(1L)).thenReturn(Optional.empty());
+        Optional<Ticket> result = this.ticketService.updateTicket(1L, new UpdateTicketDTO());
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(this.modelMapper);
+        verify(this.ticketRepository, never()).save(any(Ticket.class));
+
+    }
+
+    @Test
+    public void deleteTicket_whenTicketDoesNotExist_returnsFalseAndDoesNotCallDelete(){
+        when(this.ticketRepository.findById(1L)).thenReturn(Optional.empty());
+        boolean result = this.ticketService.deleteTicket(1L);
+        assertFalse(result);
+        verify(this.ticketRepository, never()).delete(any(Ticket.class));
+    }
+
+    @Test
+    public void deleteTicket_whenTicketExists_returnsTrueAndCallsDelete(){
+        Ticket fakeTicket = new Ticket();
+        when(this.ticketRepository.findById(1L)).thenReturn(Optional.of(fakeTicket));
+        boolean result = this.ticketService.deleteTicket(1L);
+        assertTrue(result);
+        verify(this.ticketRepository).delete(fakeTicket);
+    }
+    //TODO add tests back once auth is in place
+//    @Test
+//    public void updateTicket_whenUserIsAgent_returnsUpdatedTicket(){
+//        Long ticketId = 1L;
+//
+//        User agent = new User();
+//        agent.setRole(UserRole.AGENT);
+//
+//        Ticket existingTicket = new Ticket();
+//        existingTicket.setId(ticketId);
+//
+//        UpdateTicketDTO dto = new UpdateTicketDTO();
+//
+//        when(ticketRepository.findById(ticketId))
+//                .thenReturn(Optional.of(existingTicket));
+//
+//        when(ticketRepository.save(existingTicket))
+//                .thenReturn(existingTicket);
+//
+//        Optional<Ticket> result =
+//                ticketService.updateTicket(ticketId, dto, agent);
+//
+//        assertTrue(result.isPresent());
+//        assertEquals(existingTicket, result.get());
+//
+//        verify(modelMapper).map(dto, existingTicket);
+//        verify(ticketRepository).save(existingTicket);
+//    }
+//    @Test
+//    public void updateTicket_whenUserIsAdmin_returnsUpdatedTicket(){
+//        Long ticketId = 1L;
+//
+//        User admin = new User();
+//        admin.setRole(UserRole.ADMIN);
+//
+//        Ticket existingTicket = new Ticket();
+//        existingTicket.setId(ticketId);
+//
+//        UpdateTicketDTO dto = new UpdateTicketDTO();
+//
+//        when(ticketRepository.findById(ticketId))
+//                .thenReturn(Optional.of(existingTicket));
+//
+//        when(ticketRepository.save(existingTicket))
+//                .thenReturn(existingTicket);
+//
+//        Optional<Ticket> result =
+//                ticketService.updateTicket(ticketId, dto, admin);
+//
+//        assertTrue(result.isPresent());
+//        assertEquals(existingTicket, result.get());
+//
+//        verify(modelMapper).map(dto, existingTicket);
+//        verify(ticketRepository).save(existingTicket);
+//    }
+
+//    @Test
+//    public void updateTicket_whenCreatorOrOtherUserAttemptsUpdate_throwsAccessDenied(){
+//        Long ticketId = 1L;
+//
+//        User requester = new User();
+//        requester.setRole(UserRole.REQUESTER);
+//
+//        Ticket existingTicket = new Ticket();
+//
+//        UpdateTicketDTO dto = new UpdateTicketDTO();
+//
+//        when(ticketRepository.findById(ticketId))
+//                .thenReturn(Optional.of(existingTicket));
+//
+//        assertThrows(
+//                AccessDeniedException.class,
+//                () -> ticketService.updateTicket(ticketId, dto, requester)
+//        );
+//
+//        verify(ticketRepository, never()).save(any(Ticket.class));
+//        verifyNoInteractions(modelMapper);
+//    }
+//
+//
+//    @Test
+//    public void deleteTicket_whenUserIsNotCreatorAgentOrAdmin_doesNotDeleteTicket(){
+//
+//    }
+//
+//    @Test
+//    public void deleteTicket_whenUserIsCreatorAgentOrAdmin_deletesTicket(){
+//
+//    }
+
+
 
 
 
