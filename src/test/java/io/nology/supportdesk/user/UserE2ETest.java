@@ -29,11 +29,11 @@ public class UserE2ETest extends BaseE2ETest {
         User fake = userService.createUser(request);
 
         CreateUserDTO request2 = new CreateUserDTO();
-        request.setName("Fake");
-        request.setEmail("fakeuser2@example.com");
-        request.setPasswordHash("plainPassword123");
-        request.setRole(UserRole.REQUESTER);
-        User fake2 = userService.createUser(request);
+        request2.setName("Fake");
+        request2.setEmail("fakeuser2@example.com");
+        request2.setPasswordHash("plainPassword123");
+        request2.setRole(UserRole.REQUESTER);
+        User fake2 = userService.createUser(request2);
 
         given()
                .when()
@@ -90,7 +90,6 @@ public class UserE2ETest extends BaseE2ETest {
     @Test
     public void getById_invalidDataTypeId_returnsBadRequest(){
         given().when().get("/users/" + "banana")
-                // assert
                 .then().log().all().statusCode(HttpStatus.BAD_REQUEST.value())
                 .body("status", equalTo(400))
                 .body("error", equalTo("Bad Request"))

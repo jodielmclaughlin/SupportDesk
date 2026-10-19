@@ -173,6 +173,7 @@ public class UserServiceTest {
         Optional<User> result = this.userService.updateUser(1L, dto);
         verify(this.modelMapper).map(dto, fakeUser);
         verify(this.userRepository).save(fakeUser);
+        assertTrue(result.isPresent());
         assertEquals(fakeUser, result.get());
     }
 
