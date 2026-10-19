@@ -7,9 +7,11 @@ import io.nology.supportdesk.common.exceptions.UnprocessableContentException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -36,5 +38,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleUnprocessableContent(UnprocessableContentException ex, HttpServletRequest req){
         ApiErrorResponse response = ApiErrorResponse.of(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage(), req.getRequestURI());
         return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_CONTENT);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req){
+        ApiErrorResponse response = ApiErrorResponse.of(HttpStatus.FORBIDDEN, ex.getMessage(), req.getRequestURI());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 }
