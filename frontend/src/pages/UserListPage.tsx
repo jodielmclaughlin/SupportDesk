@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import type {User} from "../types/user.ts";
 import {getAllUsers} from "../services/users.ts";
-import UserTable from "../components/Ticket/UserTable.tsx";
+import UserTable from "../components/User/UserTable.tsx";
 
 function UserListPage(){
     const [users, setUsers] = useState<User[]>([]);
