@@ -1,5 +1,5 @@
 import type {User} from "../../types/user.ts";
-import { useCallback } from "react";
+import {useCallback} from "react";
 import SortableTableHeader from "../SortableTableHeader.tsx";
 import { useSortableData } from "../../hooks/useSortableData.ts";
 import UserRow from "./UserRow.tsx";
@@ -16,6 +16,7 @@ type SortKey =
 
 
 function UserTable({users}: UserTableProps) {
+
     const getUserSortValue = useCallback(
         (user: User, key: SortKey) => {
             switch (key) {

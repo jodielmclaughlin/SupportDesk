@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router-dom";
 import type {User} from "../../types/user.ts";
-
+import {useState} from "react";
+import UserDetailCard from "./UserDetailCard.tsx";
 
 interface UserProps{
     user: User;
@@ -8,11 +8,7 @@ interface UserProps{
 }
 
 function UserRow({user}: UserProps){
-    const navigate = useNavigate();
-
-    const handleEdit = () => {
-        navigate(`/users/${user.id}`);
-    }
+    const [showDetails, setShowDetails] = useState(false);
 
     return(
         <tr data-testid={`user-row-${user.id}`}
@@ -32,12 +28,17 @@ function UserRow({user}: UserProps){
             <td className="px-6 py-4 text-right">
                 <button
                     type="button"
-                    data-testid={`edit-ticket-${user.id}`}
-                    onClick={handleEdit}
+                    data-testid={`view-employee-${user.id}`}
+                    onClick={() => setShowDetails(true)}
                     className="font-medium text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
                 >
-                    View / Edit
+                    View
                 </button>
+                {showDetails && (
+                    <div>
+                        <UserDetailCard user={user} onClose={() => setShowDetails(false)}/>
+                    </div>
+                )}
             </td>
         </tr>
 
