@@ -4,13 +4,13 @@ interface CreateUserDTO{
     name: string;
     email: string;
     passwordHash: string;
-    userRole: UserRole;
+    role: UserRole;
 }
 
 interface UpdateUserDTO{
     name: string;
     email: string;
-    userRole: UserRole;
+    role: UserRole;
 }
 
 export async function getAllUsers(){

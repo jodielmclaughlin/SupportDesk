@@ -12,7 +12,7 @@ type SortKey =
     | "id"
     | "name"
     | "email"
-    | "userRole";
+    | "role";
 
 
 function UserTable({users}: UserTableProps) {
@@ -74,7 +74,7 @@ function UserTable({users}: UserTableProps) {
                         />
                         <SortableTableHeader
                             label="Role"
-                            sortKey="userRole"
+                            sortKey="role"
                             activeSortKey={sortKey}
                             sortDirection={sortDirection}
                             onSort={handleSort}

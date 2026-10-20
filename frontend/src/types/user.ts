@@ -8,5 +8,5 @@ export interface User {
     name: string;
     email: string;
     passwordHash: string;
-    userRole: UserRole;
+    role: UserRole;
 }

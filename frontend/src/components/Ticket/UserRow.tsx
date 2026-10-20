@@ -15,7 +15,7 @@ function UserRow({user}: UserProps){
     }
 
     return(
-        <tr data-testid={`ticket-row-${user.id}`}
+        <tr data-testid={`user-row-${user.id}`}
             className="border-b border-gray-200 hover:bg-gray-50">
             <td className="px-6 py-4 font-medium text-gray-900">
                 #{user.id}
@@ -27,7 +27,7 @@ function UserRow({user}: UserProps){
                 {user.email}
             </td>
             <td className="px-6 py-4 text-gray-600">
-                {user.userRole}
+                {user.role}
             </td>
             <td className="px-6 py-4 text-right">
                 <button
